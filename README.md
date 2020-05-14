@@ -1,2 +1,0 @@
-# magiclab
-Created with CodeSandbox
