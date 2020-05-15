@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useCallback, createContext } from "react";
 import { FixedSizeList as List } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -9,9 +9,6 @@ export default function InfiniteList({
   // (This information comes from the most recent API request.)
   //@ts-ignore
   hasNextPage,
-
-  //@ts-ignore
-  setStartIndex,
 
   // Are we currently loading a page of items?
   // (This may be an in-flight flag in your Redux store for example.)
@@ -40,14 +37,10 @@ export default function InfiniteList({
   // Render an item or a loading indicator.
   //@ts-ignore
   const Item = ({ index, style }) => {
-    let content;
     if (!isItemLoaded(index)) {
-      content = <LoadingCard />;
-    } else {
-      content = <TweetCard {...items[index]} />;
+      return <LoadingCard style={style} />;
     }
-
-    return <div style={style}>{content}</div>;
+    return <TweetCard style={style} {...items[index]} />;
   };
 
   return (
@@ -64,11 +57,8 @@ export default function InfiniteList({
                 className="List"
                 height={height}
                 itemCount={itemCount + 10}
-                itemSize={155}
-                onItemsRendered={(args) => {
-                  setStartIndex(args.visibleStartIndex);
-                  onItemsRendered(args);
-                }}
+                itemSize={200}
+                onItemsRendered={onItemsRendered}
                 ref={ref}
                 width={width}
               >

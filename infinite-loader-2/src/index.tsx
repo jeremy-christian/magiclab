@@ -11,7 +11,7 @@ const FullScreen = styled.div`
 //@ts-ignore
 const getTweets = (oldestItem, setItems, setIsNextPageLoading) => {
   // console.log("fetching tweets");
-  console.log("oldid", oldestItem?.id);
+  // console.log("oldid", oldestItem?.id);
   const apiCall = oldestItem
     ? `https://magiclab-twitter-interview.herokuapp.com/jeremy-christian/api?count=10&beforeId=${oldestItem.id}`
     : "https://magiclab-twitter-interview.herokuapp.com/jeremy-christian/api?count=10";
@@ -45,7 +45,7 @@ const getTweets = (oldestItem, setItems, setIsNextPageLoading) => {
 //@ts-ignore
 const getNewTweets = (newestItem, setItems) => {
   // console.log("fetching tweets");
-  console.log("newid", newestItem?.id);
+  // console.log("newid", newestItem?.id);
   const apiCall = newestItem
     ? `https://magiclab-twitter-interview.herokuapp.com/jeremy-christian/api?count=10&afterId=${newestItem.id}`
     : "https://magiclab-twitter-interview.herokuapp.com/jeremy-christian/api?count=10";
@@ -81,7 +81,6 @@ const App = () => {
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isNextPageLoading, setIsNextPageLoading] = useState(false);
   const [items, setItems] = useState([]);
-  const [startIndex, setStartIndex] = useState(0);
 
   //@ts-ignore
   const _loadNextPage = (...args) => {
@@ -97,7 +96,6 @@ const App = () => {
   return (
     <FullScreen>
       <InfiniteList
-        setStartIndex={setStartIndex}
         hasNextPage={hasNextPage}
         isNextPageLoading={isNextPageLoading}
         items={items}

@@ -6,6 +6,17 @@ import styled from "styled-components";
 import { Tweet } from "../model";
 const { Meta } = Card;
 
+const Container = styled.div`
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+`;
+
+const StyledCard = styled(Card)`
+  box-shadow: 0 8px 6px -6px rgba(0, 0, 0, 0.3);
+  margin: 0 2rem 0 2rem;
+  height: 100%;
+`;
+
 const SmallPrint = styled.div`
   font-size: 0.6rem;
   color: #afafaf;
@@ -17,13 +28,26 @@ const CardTitle = styled.div`
   display: flex;
 `;
 
-export const LoadingCard = () => (
-  <Card>
-    <Skeleton loading={true} avatar active></Skeleton>
-  </Card>
+export const LoadingCard = ({ style }: { style: any }) => (
+  <Container style={style}>
+    <StyledCard>
+      <Skeleton loading={true} avatar active></Skeleton>
+    </StyledCard>
+  </Container>
 );
 
-const TweetCard = ({ username, id, text, timeStamp, image }: Tweet) => {
+type TweetCardProps = Tweet & {
+  style: Record<string, string>;
+};
+
+const TweetCard = ({
+  username,
+  id,
+  text,
+  timeStamp,
+  image,
+  style,
+}: TweetCardProps) => {
   // convert timeStamp into dateString & remove prepended id from text string
   const dateString = new Date(timeStamp).toUTCString();
   const trimmedText = text.replace(`${id}. `, "");
@@ -39,13 +63,15 @@ const TweetCard = ({ username, id, text, timeStamp, image }: Tweet) => {
   );
 
   return (
-    <Card>
-      <Meta
-        avatar={<Avatar src={image} />}
-        title={cardTitle}
-        description={trimmedText}
-      />
-    </Card>
+    <Container style={style}>
+      <StyledCard>
+        <Meta
+          avatar={<Avatar src={image} />}
+          title={cardTitle}
+          description={trimmedText}
+        />
+      </StyledCard>
+    </Container>
   );
 };
 
