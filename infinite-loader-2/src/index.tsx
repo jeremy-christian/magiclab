@@ -2,7 +2,6 @@ import ReactDOM from "react-dom";
 import React, { useState } from "react";
 import InfiniteList from "./components/InfiniteList";
 import styled from "styled-components";
-import _ from "lodash";
 import { loadOlderTweets, loadInitialTweets } from "./api";
 import { Tweet } from "./model";
 

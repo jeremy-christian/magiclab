@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, createContext } from "react";
+import React from "react";
 import { FixedSizeList as List } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -12,7 +12,7 @@ export default function InfiniteList({
 }: {
   isNextPageLoading: boolean;
   items: Tweet[];
-  loadNextPage: () => void;
+  loadNextPage: () => Promise<void>;
 }) {
   // If there are more items to be loaded then add an extra row to hold a loading indicator.
   const itemCount = items.length + 1;
@@ -24,12 +24,15 @@ export default function InfiniteList({
     : loadNextPage;
 
   // Every row is loaded except for our loading indicator row.
-  //@ts-ignore
-  const isItemLoaded = (index) => index < items.length;
+  const isItemLoaded = (index: number) => index < items.length;
+
+  interface ItemProps {
+    index: number;
+    style: React.CSSProperties;
+  }
 
   // Render an item or a loading indicator.
-  //@ts-ignore
-  const Item = ({ index, style }) => {
+  const Item: React.FC<ItemProps> = ({ index, style }) => {
     if (!isItemLoaded(index)) {
       return <LoadingCard style={style} />;
     }
@@ -43,7 +46,6 @@ export default function InfiniteList({
           <InfiniteLoader
             isItemLoaded={isItemLoaded}
             itemCount={itemCount}
-            // @ts-ignore
             loadMoreItems={loadMoreItems}
           >
             {({ onItemsRendered, ref }) => (

@@ -37,7 +37,7 @@ export const LoadingCard = ({ style }: { style: any }) => (
 );
 
 type TweetCardProps = Tweet & {
-  style: Record<string, string>;
+  style: React.CSSProperties;
 };
 
 const TweetCard = ({
