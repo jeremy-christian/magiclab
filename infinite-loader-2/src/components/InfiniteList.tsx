@@ -4,20 +4,21 @@ import InfiniteLoader from "react-window-infinite-loader";
 import AutoSizer from "react-virtualized-auto-sizer";
 import TweetCard, { LoadingCard } from "./TweetCard";
 import { Tweet } from "../model";
+import styled from "styled-components";
+
+const FullScreen = styled.div`
+  width: 100%;
+  height: 100vh;
+`;
 
 export default function InfiniteList({
   isNextPageLoading,
   items,
   loadNextPage,
-  setCurrentStartIndex,
 }: {
   isNextPageLoading: boolean;
   items: Tweet[];
-  loadNextPage: (
-    startIndex: number,
-    stopIndex: number
-  ) => Promise<void[] | void>;
-  setCurrentStartIndex: (index: number) => void;
+  loadNextPage: (startIndex: number, stopIndex: number) => Promise<void>;
 }) {
   // Add an extra row to hold loading indicators
   const itemCount = items.length + 1;
@@ -30,7 +31,7 @@ export default function InfiniteList({
 
   // Every row is loaded except for our loading indicator row.
   const isItemLoaded = (index: number) => {
-    return !!items[index] && !items[index].loading;
+    return !!items[index];
   };
 
   interface ItemProps {
@@ -40,39 +41,38 @@ export default function InfiniteList({
 
   // conditionally render either placeholder cards or the tweets themselves if they're loaded
   const ListItem: React.FC<ItemProps> = ({ index, style }) => {
-    if (!isItemLoaded(index)) {
+    if (!isItemLoaded(index) || items[index].loading) {
       return <LoadingCard style={style} />;
     }
     return <TweetCard style={style} {...items[index]} />;
   };
 
   return (
-    <AutoSizer>
-      {({ height, width }: { height: number; width: number }) => {
-        return (
-          <InfiniteLoader
-            isItemLoaded={isItemLoaded}
-            itemCount={itemCount}
-            loadMoreItems={loadMoreItems}
-          >
-            {({ onItemsRendered, ref }) => (
-              <FixedSizeList
-                height={height}
-                itemCount={itemCount + 10}
-                itemSize={200}
-                onItemsRendered={(args) => {
-                  setCurrentStartIndex(args.visibleStartIndex);
-                  onItemsRendered(args);
-                }}
-                ref={ref}
-                width={width}
-              >
-                {ListItem}
-              </FixedSizeList>
-            )}
-          </InfiniteLoader>
-        );
-      }}
-    </AutoSizer>
+    <FullScreen>
+      <AutoSizer>
+        {({ height, width }: { height: number; width: number }) => {
+          return (
+            <InfiniteLoader
+              isItemLoaded={isItemLoaded}
+              itemCount={itemCount}
+              loadMoreItems={loadMoreItems}
+            >
+              {({ onItemsRendered, ref }) => (
+                <FixedSizeList
+                  height={height}
+                  itemCount={itemCount + 10}
+                  itemSize={200}
+                  onItemsRendered={onItemsRendered}
+                  ref={ref}
+                  width={width}
+                >
+                  {ListItem}
+                </FixedSizeList>
+              )}
+            </InfiniteLoader>
+          );
+        }}
+      </AutoSizer>
+    </FullScreen>
   );
 }

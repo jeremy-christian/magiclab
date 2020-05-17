@@ -4,7 +4,6 @@ import {
   differenceBy as loDifferenceBy,
   findIndex as loFindIndex,
 } from "lodash";
-import { stringify } from "querystring";
 
 const apiURL =
   "https://magiclab-twitter-interview.herokuapp.com/jeremy-christian/";
@@ -29,86 +28,70 @@ const checkForReset = async (tweets: Tweet[]) => {
 };
 
 export const loadMissingTweets = (
-  startIndex: number,
-  stopIndex: number,
+  missingTweets: Tweet[],
+  setItems: Function
+) => {
+  // look for tweets after the most recent missing tweet you found
+  const fetchRequest = `${apiURL}api?count=50&id=${missingTweets[0].id}&direction=-1`;
+  return fetch(fetchRequest)
+    .then((response) => response.json())
+    .then(checkForReset)
+    .then((foundTweets) => {
+      // if successful, update state
+      setItems((currentTweets: Tweet[]) => {
+        const newTweets = [...currentTweets];
+        // find the placeholder tweets by id and replace them with the real ones
+        foundTweets.forEach((tweet) => {
+          const index = loFindIndex(currentTweets, { id: tweet.id });
+          newTweets[index] = tweet;
+        });
+        return newTweets;
+      });
+      // if you've hit the api count limit, loop again
+      if (missingTweets.length > 50) {
+        console.log("looping");
+        loadMissingTweets(
+          [foundTweets[foundTweets.length - 1]].concat(missingTweets.slice(50)),
+          setItems
+        );
+      }
+    })
+    .catch((error) => {
+      // if unsuccessful, try again with the same id
+      loadMissingTweets(missingTweets, setItems);
+    });
+};
+
+export const loadOldTweets = (
   items: Tweet[],
   setItems: Function,
   setIsNextPageLoading: Function
 ) => {
-  let missingIds = {} as Record<string, Array<number>>;
-  for (let i = startIndex; i < stopIndex; i += 1) {
-    const { id, loading } = items[i];
-    if (id && loading) {
-      const batchID = String(Math.floor(id / 50));
-      if (missingIds[batchID]) missingIds[batchID].push(id);
-      else missingIds[batchID] = [id];
-    }
-  }
+  // old tweets are always appended to the bottom of the items arr, so take the last id as oldest
+  const oldestId = items[items.length - 1].id;
+  const fetchRequest = `${apiURL}api?count=50&beforeId=${oldestId}`;
 
-  if (Object.keys(missingIds).length > 0) {
-    return Promise.all(
-      Object.keys(missingIds).map((key) => {
-        const fetchRequest = `${apiURL}api?count=10&afterId=${missingIds[key][0]}`;
-        return fetch(fetchRequest)
-          .then((response) => response.json())
-          .then(checkForReset)
-          .then((missingTweets) => {
-            // if successful, update state
-            setIsNextPageLoading(false);
-            setItems((currentTweets: Tweet[]) => {
-              const newTweets = [...currentTweets];
-              missingTweets.forEach((tweet) => {
-                const index = loFindIndex(currentTweets, { id: tweet.id });
-                newTweets[index] = tweet;
-              });
-              return newTweets;
-            });
-          })
-          .catch((error) => {
-            // if unsuccessful, try again with the same id
-            loadMissingTweets(
-              startIndex,
-              stopIndex,
-              items,
-              setItems,
-              setIsNextPageLoading
-            );
-          });
-      })
-    );
-  } else {
-    // old tweets are always appended to the bottom of the items arr, so take the last id as oldest
-    const oldestId = items[items.length - 1].id;
-    const fetchRequest = `${apiURL}api?count=10&beforeId=${oldestId}`;
-
-    return fetch(fetchRequest)
-      .then((response) => response.json())
-      .then(checkForReset)
-      .then((olderTweets) => {
-        // if successful, update state
-        setIsNextPageLoading(false);
-        setItems((newerTweets: Tweet[]) => {
-          return newerTweets.concat(olderTweets);
-        });
-      })
-      .catch((error) => {
-        // if unsuccessful, try again with the same id
-        loadMissingTweets(
-          startIndex,
-          stopIndex,
-          items,
-          setItems,
-          setIsNextPageLoading
-        );
+  return fetch(fetchRequest)
+    .then((response) => response.json())
+    .then(checkForReset)
+    .then((olderTweets) => {
+      // if successful, update state
+      setIsNextPageLoading(false);
+      setItems((newerTweets: Tweet[]) => {
+        return newerTweets.concat(olderTweets);
       });
-  }
+    })
+    .catch((error) => {
+      // if unsuccessful, try again with the same id
+      loadOldTweets(items, setItems, setIsNextPageLoading);
+    });
 };
 
 export const loadInitialTweets = (
   setItems: Function,
   setIsNextPageLoading: Function
 ) => {
-  const fetchRequest = `${apiURL}api?count=10`;
+  const fetchRequest = `${apiURL}api?count=50`;
 
   return fetch(fetchRequest)
     .then((response) => response.json())
@@ -128,7 +111,7 @@ export const loadInitialTweets = (
 
 export const loadNewTweets = (setItems: Function) => {
   // if no id provided, return latests tweets
-  const fetchRequest = `${apiURL}api?count=3`;
+  const fetchRequest = `${apiURL}api?count=50`;
 
   return fetch(fetchRequest)
     .then((response) => response.json())
@@ -136,18 +119,36 @@ export const loadNewTweets = (setItems: Function) => {
     .then((newerTweets) => {
       // if successful, update
       setItems((olderTweets: Tweet[]) => {
-        // create placeholder entries in items for missing tweets
+        // begin check for missing tweets
+        // take the id of your last tweet you just received
         const topEdge = newerTweets[newerTweets.length - 1].id;
+
+        // take the id of your most recent tweet
         const bottomEdge = olderTweets[0].id;
+
+        // the missing tweets are the gap between them
         const idGap = topEdge - bottomEdge;
+
+        // make an array of dummy tweet objects to complete the list
         const missingTweets =
           idGap < 0
             ? []
-            : Array.from(Array(idGap), (_, index) =>
-                getDummyTweet(bottomEdge + index)
+            : Array.from(Array(idGap - 1), (_, index) =>
+                getDummyTweet(topEdge - (index + 1))
               );
 
-        // remove duplicate tweets
+        // forward the missing tweets to a new fetch call to fill them in over time
+        if (missingTweets.length > 0)
+          setTimeout(
+            () =>
+              loadMissingTweets(
+                [newerTweets[newerTweets.length - 1]].concat(missingTweets),
+                setItems
+              ),
+            1000
+          );
+
+        // remove duplicate tweets from incoming payload
         const cleanNewerTweets = loDifferenceBy(newerTweets, olderTweets, "id");
         return cleanNewerTweets.concat(missingTweets).concat(olderTweets);
       });

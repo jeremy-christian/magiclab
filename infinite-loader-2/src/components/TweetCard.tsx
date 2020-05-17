@@ -29,11 +29,13 @@ const CardTitle = styled.div`
 `;
 
 export const LoadingCard = ({ style }: { style: any }) => (
-  <Container style={style}>
-    <StyledCard>
-      <Skeleton loading={true} avatar active></Skeleton>
-    </StyledCard>
-  </Container>
+  <>
+    <Container style={style}>
+      <StyledCard>
+        <Skeleton loading={true} avatar active></Skeleton>
+      </StyledCard>
+    </Container>
+  </>
 );
 
 type TweetCardProps = Tweet & {
