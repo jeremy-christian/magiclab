@@ -22,7 +22,7 @@ export const loadOlderTweets = (
   const oldestId = items[items.length - 1].id;
   const fetchRequest = `${apiURL}api?count=10&beforeId=${oldestId}`;
   console.log("old");
-  fetch(fetchRequest)
+  return fetch(fetchRequest)
     .then((response) => response.json())
     .then(checkForReset)
     .then((tweets) => {
@@ -44,7 +44,7 @@ export const loadInitialTweets = (
 ) => {
   const fetchRequest = `${apiURL}api?count=10`;
 
-  fetch(fetchRequest)
+  return fetch(fetchRequest)
     .then((response) => response.json())
     .then(checkForReset)
     .then((tweets) => {
@@ -69,7 +69,7 @@ export const loadNewTweets = (
     ? `${apiURL}api?count=10&afterId=${newestID}`
     : `${apiURL}api?count=10`;
 
-  fetch(fetchRequest)
+  return fetch(fetchRequest)
     .then((response) => response.json())
     .then(checkForReset)
     .then((tweets) => {

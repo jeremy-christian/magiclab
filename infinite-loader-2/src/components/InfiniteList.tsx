@@ -3,27 +3,25 @@ import { FixedSizeList as List } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import AutoSizer from "react-virtualized-auto-sizer";
 import TweetCard, { LoadingCard } from "./TweetCard";
+import { Tweet } from "../model";
 
 export default function InfiniteList({
-  // Are we currently loading a page of items?
-  // (This may be an in-flight flag in your Redux store for example.)
-  //@ts-ignore
   isNextPageLoading,
-
-  // Array of items loaded so far.
-  //@ts-ignore
   items,
-
-  // Callback function responsible for loading the next page of items.
-  //@ts-ignore
   loadNextPage,
+}: {
+  isNextPageLoading: boolean;
+  items: Tweet[];
+  loadNextPage: () => void;
 }) {
   // If there are more items to be loaded then add an extra row to hold a loading indicator.
   const itemCount = items.length + 1;
 
   // Only load 1 page of items at a time.
   // Pass an empty callback to InfiniteLoader in case it asks us to load more than once.
-  const loadMoreItems = isNextPageLoading ? () => {} : loadNextPage;
+  const loadMoreItems = isNextPageLoading
+    ? () => new Promise(() => {})
+    : loadNextPage;
 
   // Every row is loaded except for our loading indicator row.
   //@ts-ignore
@@ -45,6 +43,7 @@ export default function InfiniteList({
           <InfiniteLoader
             isItemLoaded={isItemLoaded}
             itemCount={itemCount}
+            // @ts-ignore
             loadMoreItems={loadMoreItems}
           >
             {({ onItemsRendered, ref }) => (
