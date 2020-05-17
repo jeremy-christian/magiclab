@@ -1,5 +1,5 @@
 import React from "react";
-import { FixedSizeList as List } from "react-window";
+import { FixedSizeList } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import AutoSizer from "react-virtualized-auto-sizer";
 import TweetCard, { LoadingCard } from "./TweetCard";
@@ -9,12 +9,17 @@ export default function InfiniteList({
   isNextPageLoading,
   items,
   loadNextPage,
+  setCurrentStartIndex,
 }: {
   isNextPageLoading: boolean;
   items: Tweet[];
-  loadNextPage: () => Promise<void>;
+  loadNextPage: (
+    startIndex: number,
+    stopIndex: number
+  ) => Promise<void[] | void>;
+  setCurrentStartIndex: (index: number) => void;
 }) {
-  // If there are more items to be loaded then add an extra row to hold a loading indicator.
+  // Add an extra row to hold loading indicators
   const itemCount = items.length + 1;
 
   // Only load 1 page of items at a time.
@@ -24,15 +29,17 @@ export default function InfiniteList({
     : loadNextPage;
 
   // Every row is loaded except for our loading indicator row.
-  const isItemLoaded = (index: number) => index < items.length;
+  const isItemLoaded = (index: number) => {
+    return !!items[index] && !items[index].loading;
+  };
 
   interface ItemProps {
     index: number;
     style: React.CSSProperties;
   }
 
-  // Render an item or a loading indicator.
-  const Item: React.FC<ItemProps> = ({ index, style }) => {
+  // conditionally render either placeholder cards or the tweets themselves if they're loaded
+  const ListItem: React.FC<ItemProps> = ({ index, style }) => {
     if (!isItemLoaded(index)) {
       return <LoadingCard style={style} />;
     }
@@ -49,17 +56,19 @@ export default function InfiniteList({
             loadMoreItems={loadMoreItems}
           >
             {({ onItemsRendered, ref }) => (
-              <List
-                className="List"
+              <FixedSizeList
                 height={height}
                 itemCount={itemCount + 10}
                 itemSize={200}
-                onItemsRendered={onItemsRendered}
+                onItemsRendered={(args) => {
+                  setCurrentStartIndex(args.visibleStartIndex);
+                  onItemsRendered(args);
+                }}
                 ref={ref}
                 width={width}
               >
-                {Item}
-              </List>
+                {ListItem}
+              </FixedSizeList>
             )}
           </InfiniteLoader>
         );

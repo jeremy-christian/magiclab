@@ -4,4 +4,5 @@ export interface Tweet {
   text: string;
   username: string;
   timeStamp: number;
+  loading?: boolean;
 }
