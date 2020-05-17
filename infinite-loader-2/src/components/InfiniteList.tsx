@@ -5,11 +5,6 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import TweetCard, { LoadingCard } from "./TweetCard";
 
 export default function InfiniteList({
-  // Are there more items to load?
-  // (This information comes from the most recent API request.)
-  //@ts-ignore
-  hasNextPage,
-
   // Are we currently loading a page of items?
   // (This may be an in-flight flag in your Redux store for example.)
   //@ts-ignore
@@ -24,7 +19,7 @@ export default function InfiniteList({
   loadNextPage,
 }) {
   // If there are more items to be loaded then add an extra row to hold a loading indicator.
-  const itemCount = hasNextPage ? items.length + 1 : items.length;
+  const itemCount = items.length + 1;
 
   // Only load 1 page of items at a time.
   // Pass an empty callback to InfiniteLoader in case it asks us to load more than once.

@@ -53,7 +53,6 @@ const TweetCard = ({
   const trimmedText = text.replace(`${id}. `, "");
 
   // define cardTitle component, arrange title contents using styled components
-  // TODO move out of here
   const cardTitle = (
     <CardTitle>
       {username}
