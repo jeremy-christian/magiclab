@@ -6,7 +6,7 @@
     "@types/react-window": "^1.8.2",
     "@types/styled-components": "^5.1.0",
     "antd": "4.2.2",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-scripts": "3.4.0",
