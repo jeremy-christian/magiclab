@@ -15,7 +15,7 @@
     "@types/react-window": "^1.8.2",
     "@types/react-window-infinite-loader": "^1.0.3",
     "antd": "^4.2.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
